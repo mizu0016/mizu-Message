@@ -2,151 +2,112 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Mizuki Chat Pro - WebAuthn</title>
+  <title>Mizuki Chat Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: sans-serif; background: #0f0f0f; color: #e0e0e0; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .card { background: #1a1a1a; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); width: 340px; text-align: center; border: 1px solid #333; }
+    body { font-family: sans-serif; background: #0a0a0a; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: #161616; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.9); width: 340px; text-align: center; border: 1px solid #333; }
     .hidden { display: none; }
-    h2 { color: #007bff; }
     input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #333; border-radius: 10px; background: #222; color: white; }
     button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-    #msg-list { height: 250px; overflow-y: auto; background: #111; padding: 10px; border-radius: 10px; text-align: left; margin: 15px 0; border: 1px solid #222; }
-    .msg-item { background: #252525; padding: 8px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid #007bff; font-size: 14px; }
-    .fp-btn { font-size: 60px; cursor: pointer; margin: 20px 0; display: inline-block; }
+    #msg-list { height: 280px; overflow-y: auto; background: #111; padding: 10px; border-radius: 10px; text-align: left; margin: 15px 0; border: 1px solid #222; }
+    .msg-item { background: #222; padding: 10px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid #007bff; font-size: 14px; }
+    .fp-btn { font-size: 70px; cursor: pointer; margin: 20px 0; transition: transform 0.2s; }
+    .fp-btn:active { transform: scale(0.9); }
   </style>
 </head>
 <body>
 
   <div id="view-login" class="card">
     <h2>MIZUKI CHAT</h2>
-    <p style="font-size: 12px; color: #888;">SIGNATURE VERIFICATION</p>
     <div class="fp-btn" onclick="login()">🖐️</div>
-    <p id="status">指紋でログイン</p>
-    <button onclick="showView('view-reg')" style="background:none; color:#007bff; font-size:12px;">新規ID登録はこちら</button>
+    <p id="status">タップして指紋認証</p>
+    <button onclick="showView('view-reg')" style="background:none; color:#007bff; font-size:12px;">新規登録</button>
   </div>
 
   <div id="view-reg" class="card hidden">
-    <h3>PRO REGISTRATION</h3>
-    <input type="text" id="reg-id" placeholder="登録するユーザーID">
-    <button onclick="register()">指紋と公開鍵を登録</button>
-    <button onclick="showView('view-login')" style="background:none; border:1px solid #444; margin-top:10px;">戻る</button>
+    <h3>REGISTRATION</h3>
+    <input type="text" id="reg-id" placeholder="ユーザーIDを入力">
+    <button onclick="register()">指紋を登録して開始</button>
+    <button onclick="showView('view-login')" style="background:none; margin-top:10px;">戻る</button>
   </div>
 
   <div id="view-chat" class="card hidden" style="width: 90%; max-width: 450px;">
     <div id="msg-list"></div>
     <input type="text" id="msg-input" placeholder="メッセージ...">
-    <button onclick="sendMsg()">送信</button>
-    <button onclick="loadMsgs()" style="background: #28a745; margin-top:5px;">更新</button>
+    <div style="display:flex; gap:10px;">
+      <button onclick="sendMsg()" style="flex:2;">送信</button>
+      <button onclick="loadMsgs()" style="flex:1; background:#28a745;">更新</button>
+    </div>
   </div>
 
   <script>
-    // ★みずのGAS URLをここに貼り付けて！
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-Wsp-pxK0H9q8V5itnSHCfzQtZMxenWsnBh4_bKE4ZzWNMziK9TTCZOsqQt5fO5pemA/exec';
-
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxlcP83GTIECZDc44MfERV_WOTbdPUatnx0UnJYQwvdXlLCYfAvMjSeZffqXZN0vdx10w/exec';
     let myId = localStorage.getItem('mizuki_chat_id') || "";
 
-    // ユーティリティ：ArrayBufferをBase64文字列に変換
     const bufferToBase64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
 
-    // 【本物の登録：公開鍵を生成してGASへ】
     async function register() {
       const id = document.getElementById('reg-id').value;
-      if (!id) return alert("IDを入れてね");
-
+      if (!id) return alert("IDを入力してね");
       try {
         const challenge = window.crypto.getRandomValues(new Uint8Array(32));
-        const credential = await navigator.credentials.create({
+        const cred = await navigator.credentials.create({
           publicKey: {
-            challenge,
-            rp: { name: "Mizuki Chat" },
+            challenge, rp: { name: "Mizuki Chat" },
             user: { id: Uint8Array.from(id, c => c.charCodeAt(0)), name: id, displayName: id },
             pubKeyCredParams: [{ alg: -7, type: "public-key" }],
             authenticatorSelection: { authenticatorAttachment: "platform" }
           }
         });
-
-        // 公開鍵を取り出す
-        const publicKey = bufferToBase64(credential.response.getPublicKey());
-
-        // GASへ保存
-        await fetch(GAS_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: JSON.stringify({ action: 'registerUser', id: id, publicKey: publicKey })
-        });
-
+        const publicKey = bufferToBase64(cred.response.getPublicKey());
+        await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'registerUser', id, publicKey })});
         localStorage.setItem('mizuki_chat_id', id);
-        alert("登録完了！公開鍵をスプレッドシートに送ったよ。");
+        alert("登録完了！");
         location.reload();
       } catch (e) { alert("登録エラー: " + e.message); }
     }
 
-    // 【本物のログイン：署名を作成して検証】
     async function login() {
-      if (!myId) return alert("先に登録してね！");
+      if (!myId) return showView('view-reg');
       const status = document.getElementById('status');
-      status.innerText = "署名を作成中...";
-
       try {
         const challenge = window.crypto.getRandomValues(new Uint8Array(32));
-        const assertion = await navigator.credentials.get({
-          publicKey: { challenge, timeout: 60000, userVerification: "required" }
-        });
-
-        // 署名データを抽出
-        const sigData = {
-          action: 'loginVerify',
-          id: myId,
-          challenge: bufferToBase64(challenge),
-          signature: bufferToBase64(assertion.response.signature),
-          authenticatorData: bufferToBase64(assertion.response.authenticatorData),
-          clientDataJSON: bufferToBase64(assertion.response.clientDataJSON)
-        };
-
-        // GASで検証
+        const assertion = await navigator.credentials.get({ publicKey: { challenge, timeout: 60000, userVerification: "required" }});
+        
         const res = await fetch(GAS_URL, {
           method: 'POST',
-          body: JSON.stringify(sigData)
+          body: JSON.stringify({
+            action: 'loginVerify', id: myId,
+            signature: bufferToBase64(assertion.response.signature),
+            authenticatorData: bufferToBase64(assertion.response.authenticatorData)
+          })
         });
         const result = await res.json();
-
-        if (result.success) {
-          showView('view-chat');
-          loadMsgs();
-        } else {
-          status.innerText = "検証失敗: " + result.message;
-        }
+        if (result.success) { showView('view-chat'); loadMsgs(); }
+        else { status.innerText = "認証失敗"; }
       } catch (e) { status.innerText = "エラー: " + e.message; }
     }
 
     function sendMsg() {
       const txt = document.getElementById('msg-input').value;
-      fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({ action: 'postMessage', userId: myId, text: txt })
-      }).then(() => {
-        document.getElementById('msg-input').value = "";
-        setTimeout(loadMsgs, 500);
-      });
+      if(!txt) return;
+      fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'postMessage', userId: myId, text: txt })})
+      .then(() => { document.getElementById('msg-input').value = ""; setTimeout(loadMsgs, 500); });
     }
 
     async function loadMsgs() {
       const res = await fetch(`${GAS_URL}?action=getMessages`);
       const msgs = await res.json();
-      document.getElementById('msg-list').innerHTML = msgs.map(m => `
-        <div class="msg-item"><strong>${m[0]}</strong>: ${m[1]}</div>
-      `).join('');
+      document.getElementById('msg-list').innerHTML = msgs.map(m => `<div class="msg-item"><b>${m[0]}</b>: ${m[1]}</div>`).join('');
     }
 
     function showView(id) {
       document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
     }
-    
-    // 起動時にIDがあれば表示を調整
-    if(myId) document.getElementById('status').innerText = "おかえり、" + myId + "！";
+
+    if(myId) document.getElementById('status').innerText = "おかえり、" + myId;
   </script>
 </body>
 </html>
