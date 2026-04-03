@@ -2,10 +2,9 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>mizu message</title>
     <style>
-        /* ここにCSSを直接書いたよ！これでファイルが読み込めない心配なし */
         :root {
             --mizu-blue: #0095f6;
             --mizu-bg: #fafafa;
@@ -14,65 +13,111 @@
             --line-bg: #7494c0;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background-color: var(--mizu-bg); }
+        /* スマホで横揺れしないための魔法の呪文 */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: var(--mizu-bg); 
+            position: fixed; /* 勝手にスクロールさせない */
+        }
 
-        .app-container { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; background: white; position: relative; overflow: hidden; display: flex; flex-direction: column; }
-        .screen { display: none; width: 100%; height: calc(100% - 50px); overflow-y: auto; position: absolute; top: 0; left: 0; background: white; flex-direction: column; }
+        .app-container { 
+            width: 100%; 
+            max-width: 500px; /* パソコンで見た時の最大幅 */
+            height: 100%; 
+            margin: 0 auto; 
+            background: white; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .screen { 
+            display: none; 
+            width: 100%; 
+            height: calc(100% - 60px); /* 下のナビ分を引く */
+            overflow-y: auto; 
+            background: white; 
+            flex-direction: column; 
+        }
         .screen.active { display: flex; }
 
-        .header, .line-header { padding: 15px; border-bottom: 1px solid var(--mizu-border); text-align: center; font-weight: bold; background: white; position: sticky; top: 0; z-index: 10; }
+        /* ヘッダー */
+        .header, .line-header { 
+            width: 100%;
+            height: 60px;
+            padding: 15px; 
+            border-bottom: 1px solid var(--mizu-border); 
+            text-align: center; 
+            font-weight: bold; 
+            background: white; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
 
+        /* タイムライン */
         .content-list { padding: 10px; display: flex; flex-direction: column; gap: 15px; }
-        .post-card { border: 1px solid var(--mizu-border); border-radius: 8px; overflow: hidden; background: white; }
+        .post-card { border: 1px solid var(--mizu-border); border-radius: 8px; overflow: hidden; background: white; width: 100%; }
         .post-card video, .post-card img { width: 100%; display: block; background: #000; }
-        .post-card div { padding: 10px; }
+        .post-card div { padding: 10px; font-size: 14px; }
 
+        /* フォーム入力 */
         .form-container { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        input { padding: 12px; border: 1px solid var(--mizu-border); border-radius: 5px; width: 100%; border: 1px solid #ccc; }
+        input { padding: 12px; border: 1px solid #ccc; border-radius: 8px; width: 100%; font-size: 16px; }
 
-        .btn-main { background: var(--mizu-blue); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-sub { background: #eee; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+        .btn-main { background: var(--mizu-blue); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .btn-sub { background: #eee; border: none; padding: 10px; border-radius: 8px; }
 
-        .nav-bar { height: 50px; border-top: 1px solid var(--mizu-border); display: none; justify-content: space-around; align-items: center; position: absolute; bottom: 0; width: 100%; background: white; }
-        .nav-item { font-size: 24px; cursor: pointer; text-decoration: none; }
+        /* ナビゲーションバー */
+        .nav-bar { 
+            height: 60px; 
+            border-top: 1px solid var(--mizu-border); 
+            display: none; 
+            justify-content: space-around; 
+            align-items: center; 
+            background: white; 
+            flex-shrink: 0;
+        }
+        .nav-item { font-size: 24px; cursor: pointer; flex: 1; text-align: center; line-height: 60px; }
 
-        .chat-list-container { display: flex; flex-direction: column; }
-        .chat-user-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .chat-user-avatar { width: 50px; height: 50px; border-radius: 18px; background: #ddd; margin-right: 15px; }
+        /* トーク一覧 */
+        .chat-user-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; width: 100%; }
+        .chat-user-avatar { width: 45px; height: 45px; border-radius: 15px; background: #ddd; margin-right: 12px; flex-shrink: 0; }
         
+        /* チャット画面 */
         .line-chat-area { flex-grow: 1; background: var(--line-bg); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
-        .msg-bubble { max-width: 80%; padding: 10px; border-radius: 15px; background: white; align-self: flex-start; font-size: 14px; }
+        .msg-bubble { max-width: 80%; padding: 10px; border-radius: 15px; background: white; font-size: 14px; word-wrap: break-word; }
         .msg-me { background: var(--line-green); align-self: flex-end; }
         .line-input-area { padding: 10px; display: flex; gap: 5px; border-top: 1px solid var(--mizu-border); background: white; }
 
-        .ig-header { padding: 20px; display: flex; align-items: center; }
-        .ig-avatar { width: 70px; height: 70px; border-radius: 50%; background: #ddd; margin-right: 20px; }
-        .ig-stats { display: flex; flex-grow: 1; justify-content: center; text-align: center; }
-        .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        /* プロフィール */
+        .ig-header { padding: 20px; display: flex; align-items: center; width: 100%; }
+        .ig-avatar { width: 65px; height: 65px; border-radius: 50%; background: #ddd; margin-right: 15px; flex-shrink: 0; }
+        .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; width: 100%; }
         .ig-post-item { aspect-ratio: 1/1; background: #eee; overflow: hidden; }
         .ig-post-item video, .ig-post-item img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .lang-btn { margin: 10px; padding: 15px; border-radius: 10px; border: 1px solid var(--mizu-blue); background: white; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div id="screen-start" class="screen active" style="justify-content: center; text-align: center;">
-        <h1>mizu message</h1>
-        <p>Select Language / 言語選択</p>
-        <button class="lang-btn" onclick="showScreen('screen-auth')">日本語</button>
-        <button class="lang-btn" onclick="showScreen('screen-auth')">English</button>
+    <div id="screen-start" class="screen active" style="justify-content: center; text-align: center; padding: 20px;">
+        <h1 style="font-size: 32px; color: var(--mizu-blue);">mizu message</h1>
+        <p style="margin-bottom: 20px; color: #666;">言語を選んでね</p>
+        <button class="btn-main" onclick="showScreen('screen-auth')">日本語ではじめる</button>
     </div>
 
     <div id="screen-auth" class="screen">
         <div class="form-container">
-            <h2>アカウント管理</h2>
+            <h2>新規登録 / ログイン</h2>
             <input type="email" id="reg-email" placeholder="メールアドレス">
-            <input type="text" id="reg-name" maxlength="17" placeholder="名前">
-            <input type="text" id="reg-id" placeholder="ID (英数字)">
-            <button class="btn-main" onclick="register()">ログイン / 登録</button>
+            <input type="text" id="reg-name" maxlength="17" placeholder="なまえ">
+            <input type="text" id="reg-id" placeholder="ユーザーID (英数字)">
+            <button class="btn-main" onclick="register()">スタート！</button>
         </div>
     </div>
 
@@ -84,55 +129,56 @@
     <div id="screen-chat-list" class="screen">
         <div class="line-header">
             トーク
-            <span onclick="openSearch()" style="position:absolute; right:15px; cursor:pointer;">🔍</span>
+            <span onclick="openSearch()" style="position:absolute; right:15px; font-size: 20px;">🔍</span>
         </div>
-        <div id="chat-user-list" class="chat-list-container"></div>
+        <div id="chat-user-list"></div>
     </div>
 
     <div id="screen-message" class="screen">
         <div class="line-header">
-            <span onclick="showScreen('screen-chat-list')" style="cursor:pointer; position:absolute; left:15px;">＜</span>
-            <span id="current-chat-target">友達の名前</span>
+            <span onclick="showScreen('screen-chat-list')" style="position:absolute; left:15px;">＜</span>
+            <span id="current-chat-target">友達</span>
         </div>
         <div class="line-chat-area" id="chat-box"></div>
         <div class="line-input-area">
-            <input type="text" id="msg-input" placeholder="メッセージを入力">
-            <button class="btn-main" onclick="sendMsg()">送信</button>
+            <input type="text" id="msg-input" placeholder="メッセージ...">
+            <button class="btn-main" style="padding: 10px 20px;" onclick="sendMsg()">送信</button>
         </div>
     </div>
 
     <div id="screen-post" class="screen">
         <div class="form-container">
-            <h2>新規投稿</h2>
-            <input type="text" id="post-title" placeholder="タイトル">
+            <h2>あたらしい投稿</h2>
+            <input type="text" id="post-title" placeholder="タイトルを書いてね">
+            <p style="font-size: 12px; color: #666;">動画か写真を選んでね</p>
             <input type="file" id="post-file-input" accept="video/*,image/*">
-            <button class="btn-main" onclick="createPost()">アップロード</button>
+            <button class="btn-main" onclick="createPost()">投稿する！</button>
         </div>
     </div>
 
     <div id="screen-profile" class="screen">
         <div class="ig-header">
             <div class="ig-avatar"></div>
-            <div class="ig-stats">
-                <div><strong id="post-count">0</strong><br>投稿</div>
+            <div style="text-align: center; flex-grow: 1;">
+                <strong id="post-count" style="font-size: 20px;">0</strong><br><span style="font-size: 12px;">投稿</span>
             </div>
         </div>
-        <div style="padding: 0 20px 20px;">
-            <strong id="prof-display-name">名前</strong><br>
-            <span id="prof-display-id" style="color: #8e8e8e;">@id</span>
+        <div style="padding: 0 20px 15px;">
+            <strong id="prof-display-name" style="font-size: 16px;">なまえ</strong><br>
+            <span id="prof-display-id" style="color: #8e8e8e; font-size: 14px;">@id</span>
         </div>
         <div class="ig-grid" id="post-grid"></div>
     </div>
 
-    <div id="search-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:20px; border-radius:10px; width:80%; max-width:300px; text-align:center;">
-            <h3>IDで検索</h3>
-            <input type="text" id="search-id-input" placeholder="友達のIDを入力" style="margin:15px 0;">
+    <div id="search-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:25px; border-radius:15px; width:85%; max-width:320px; text-align:center;">
+            <h3 style="margin-bottom: 15px;">ID検索</h3>
+            <input type="text" id="search-id-input" placeholder="友達のIDを入力" style="margin-bottom: 15px;">
             <div style="display:flex; gap:10px;">
-                <button class="btn-sub" onclick="closeSearch()" style="flex:1;">閉じる</button>
-                <button class="btn-main" onclick="searchUser()" style="flex:1;">検索</button>
+                <button class="btn-sub" onclick="closeSearch()" style="flex:1;">とじる</button>
+                <button class="btn-main" onclick="searchUser()" style="flex:1;">さがす</button>
             </div>
-            <div id="search-result" style="margin-top:15px; font-weight:bold;"></div>
+            <div id="search-result" style="margin-top:20px; font-weight:bold; color: var(--mizu-blue);"></div>
         </div>
     </div>
 
