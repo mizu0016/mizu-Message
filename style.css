@@ -1,0 +1,59 @@
+/* 前回のCSSにこれを追加・上書きしてね */
+.chat-list-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-user-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.chat-user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 20px;
+    background: #ddd;
+    margin-right: 15px;
+}
+
+.chat-user-info {
+    flex-grow: 1;
+}
+
+.chat-user-name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.chat-user-last-msg {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* メッセージの吹き出しをLINEに近づける */
+.msg-bubble {
+    max-width: 80%;
+    padding: 10px;
+    border-radius: 15px;
+    background: white; /* 相手は白 */
+    align-self: flex-start;
+    position: relative;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.msg-me {
+    background: #85e249; /* 自分は緑 */
+    align-self: flex-end;
+}
+
+.msg-sender-name {
+    font-size: 11px;
+    color: #444;
+    margin-bottom: 3px;
+}
