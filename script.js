@@ -1,4 +1,3 @@
-// 【重要】自分の情報を正しく入れてね
 const GITHUB_TOKEN = "ghp_qdYkDtmSZ68ARqQ3L4EeW86W8ySo9L1VA6MM"; 
 const REPO_OWNER = "mizu0016"; 
 const REPO_NAME = "mizu-Message-"; 
