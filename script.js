@@ -1,6 +1,6 @@
 // 【設定：ここをミズの鍵に書き換えてね】
-const GITHUB_TOKEN = "ここに自分の鍵を貼り付けてね"; 
-const REPO_OWNER = "自分のGitHubユーザー名"; 
+const GITHUB_TOKEN = "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"; 
+const REPO_OWNER = "mizu0016"; 
 const REPO_NAME = "mizu-message"; // リポジトリ名
 const FILE_PATH = "data/mizu_data.json"; // データを保存するファイル
 
