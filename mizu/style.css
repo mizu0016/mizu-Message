@@ -1,1 +1,51 @@
+:root {
+    --mizu-blue: #0095f6;
+    --mizu-bg: #fafafa;
+    --mizu-border: #dbdbdb;
+    --line-green: #85e249;
+    --line-bg: #7494c0;
+}
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: sans-serif; background-color: var(--mizu-bg); }
+
+.app-container { width: 100%; max-width: 500px; height: 100vh; margin: 0 auto; background: white; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.screen { display: none; width: 100%; height: calc(100% - 50px); overflow-y: auto; position: absolute; top: 0; left: 0; background: white; flex-direction: column; }
+.screen.active { display: flex; }
+
+.header, .line-header { padding: 15px; border-bottom: 1px solid var(--mizu-border); text-align: center; font-weight: bold; background: white; position: sticky; top: 0; z-index: 10; }
+
+.content-list { padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+.post-card { border: 1px solid var(--mizu-border); border-radius: 8px; overflow: hidden; background: white; }
+.post-card video, .post-card img { width: 100%; display: block; background: #000; }
+.post-card div { padding: 10px; }
+
+.form-container { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+input { padding: 12px; border: 1px solid var(--mizu-border); border-radius: 5px; width: 100%; }
+
+.btn-main { background: var(--mizu-blue); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.btn-sub { background: #eee; border: none; padding: 12px; border-radius: 8px; cursor: pointer; }
+
+.nav-bar { height: 50px; border-top: 1px solid var(--mizu-border); display: none; justify-content: space-around; align-items: center; position: absolute; bottom: 0; width: 100%; background: white; }
+.nav-item { font-size: 24px; cursor: pointer; }
+
+/* トーク一覧 */
+.chat-list-container { display: flex; flex-direction: column; }
+.chat-user-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; }
+.chat-user-avatar { width: 50px; height: 50px; border-radius: 18px; background: #ddd; margin-right: 15px; }
+.chat-user-name { font-weight: bold; }
+
+/* トークルーム */
+.line-chat-area { flex-grow: 1; background: var(--line-bg); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.msg-bubble { max-width: 80%; padding: 10px; border-radius: 15px; background: white; align-self: flex-start; font-size: 14px; position: relative; }
+.msg-me { background: var(--line-green); align-self: flex-end; }
+.line-input-area { padding: 10px; display: flex; gap: 5px; border-top: 1px solid var(--mizu-border); }
+
+/* プロフィール */
+.ig-header { padding: 20px; display: flex; align-items: center; }
+.ig-avatar { width: 70px; height: 70px; border-radius: 50%; background: #ddd; margin-right: 20px; }
+.ig-stats { display: flex; flex-grow: 1; justify-content: center; text-align: center; }
+.ig-name-section { padding: 0 20px 20px; }
+.ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.ig-post-item { aspect-ratio: 1/1; background: #eee; overflow: hidden; }
+.ig-post-item video, .ig-post-item img { width: 100%; height: 100%; object-fit: cover; }
