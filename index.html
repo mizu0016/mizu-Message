@@ -19,9 +19,9 @@
 
     <div id="screen-auth" class="screen">
         <div class="form-container">
-            <h2>アカウント登録・引継ぎ</h2>
+            <h2>アカウント管理</h2>
             <div class="input-group">
-                <label>メールアドレス (引継ぎ用)</label>
+                <label>メールアドレス (これで引き継ぎます)</label>
                 <input type="email" id="reg-email" placeholder="mizu@example.com">
             </div>
             <div class="input-group">
@@ -32,7 +32,31 @@
                 <label>ID (6〜20文字、英数字のみ)</label>
                 <input type="text" id="reg-id" placeholder="mizu1234">
             </div>
-            <button class="btn-main" onclick="register()">スタート！</button>
+            <button class="btn-main" onclick="register()">ログイン / 登録</button>
+        </div>
+    </div>
+
+    <div id="screen-timeline" class="screen">
+        <div class="header">タイムライン</div>
+        <div id="timeline-list" class="content-list"></div>
+    </div>
+
+    <div id="screen-message" class="screen">
+        <div class="line-header">トーク</div>
+        <div class="line-chat-area" id="chat-box"></div>
+        <div class="line-input-area">
+            <input type="text" id="msg-input" placeholder="メッセージを入力">
+            <button class="btn-main" onclick="sendMsg()">送信</button>
+        </div>
+    </div>
+
+    <div id="screen-post" class="screen">
+        <div class="form-container">
+            <h2>新規投稿</h2>
+            <input type="text" id="post-title" placeholder="タイトル">
+            <input type="text" id="post-file" placeholder="画像/動画のURL">
+            <button class="btn-main" onclick="createPost()">GitHubへ保存</button>
+            <button class="btn-sub" onclick="showScreen('screen-timeline')">戻る</button>
         </div>
     </div>
 
@@ -40,7 +64,7 @@
         <div class="ig-header">
             <div class="ig-avatar"></div>
             <div class="ig-stats">
-                <div><strong>0</strong><br>投稿</div>
+                <div><strong id="post-count">0</strong><br>投稿</div>
                 <div><strong>100</strong><br>フォロワー</div>
                 <div><strong>100</strong><br>フォロー中</div>
             </div>
@@ -52,28 +76,8 @@
         <div class="ig-grid" id="post-grid"></div>
     </div>
 
-    <div id="screen-post" class="screen">
-        <div class="form-container">
-            <h2>新規投稿</h2>
-            <input type="text" id="post-title" placeholder="タイトルを入力">
-            <p>画像・動画のURL</p>
-            <input type="text" id="post-file" placeholder="https://...">
-            <button class="btn-main" onclick="createPost()">投稿する</button>
-        </div>
-    </div>
-
-    <div id="screen-message" class="screen">
-        <div class="line-header">
-            <span>トーク</span>
-        </div>
-        <div class="line-chat-area" id="chat-box"></div>
-        <div class="line-input-area">
-            <input type="text" id="msg-input" placeholder="メッセージを入力">
-            <button class="btn-main" onclick="sendMsg()">送信</button>
-        </div>
-    </div>
-
     <nav id="main-nav" class="nav-bar">
+        <div class="nav-item" onclick="showScreen('screen-timeline')">🏠</div>
         <div class="nav-item" onclick="showScreen('screen-message')">💬</div>
         <div class="nav-item" onclick="showScreen('screen-post')">➕</div>
         <div class="nav-item" onclick="showScreen('screen-profile')">👤</div>
