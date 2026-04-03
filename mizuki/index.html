@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mizu message</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+    <div id="screen-start" class="screen active">
+        <h1>mizu message</h1>
+        <p>Select Language / 言語選択</p>
+        <button class="lang-btn" onclick="showScreen('screen-auth')">日本語</button>
+        <button class="lang-btn" onclick="showScreen('screen-auth')">English</button>
+    </div>
+
+    <div id="screen-auth" class="screen">
+        <div class="form-container">
+            <h2>アカウント管理</h2>
+            <input type="email" id="reg-email" placeholder="メールアドレス">
+            <input type="text" id="reg-name" maxlength="17" placeholder="名前">
+            <input type="text" id="reg-id" placeholder="ID (英数字)">
+            <button class="btn-main" onclick="register()">ログイン / 登録</button>
+        </div>
+    </div>
+
+    <div id="screen-timeline" class="screen">
+        <div class="header">タイムライン</div>
+        <div id="timeline-list" class="content-list"></div>
+    </div>
+
+    <div id="screen-chat-list" class="screen">
+        <div class="line-header">
+            トーク
+            <span onclick="openSearch()" style="position:absolute; right:15px; cursor:pointer;">🔍</span>
+        </div>
+        <div id="chat-user-list" class="chat-list-container"></div>
+    </div>
+
+    <div id="screen-message" class="screen">
+        <div class="line-header">
+            <span onclick="showScreen('screen-chat-list')" style="cursor:pointer; position:absolute; left:15px;">＜</span>
+            <span id="current-chat-target">友達の名前</span>
+        </div>
+        <div class="line-chat-area" id="chat-box"></div>
+        <div class="line-input-area">
+            <input type="text" id="msg-input" placeholder="メッセージを入力">
+            <button class="btn-main" onclick="sendMsg()">送信</button>
+        </div>
+    </div>
+
+    <div id="screen-post" class="screen">
+        <div class="form-container">
+            <h2>新規投稿</h2>
+            <input type="text" id="post-title" placeholder="タイトル">
+            <input type="file" id="post-file-input" accept="video/*,image/*">
+            <button class="btn-main" onclick="createPost()">アップロード</button>
+        </div>
+    </div>
+
+    <div id="screen-profile" class="screen">
+        <div class="ig-header">
+            <div class="ig-avatar"></div>
+            <div class="ig-stats">
+                <div><strong id="post-count">0</strong><br>投稿</div>
+            </div>
+        </div>
+        <div class="ig-name-section">
+            <strong id="prof-display-name">名前</strong><br>
+            <span id="prof-display-id" style="color: #8e8e8e;">@id</span>
+        </div>
+        <div class="ig-grid" id="post-grid"></div>
+    </div>
+
+    <div id="search-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:20px; border-radius:10px; width:80%; max-width:300px; text-align:center;">
+            <h3>IDで検索</h3>
+            <input type="text" id="search-id-input" placeholder="友達のIDを入力" style="margin:15px 0; width:100%; padding:10px;">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-sub" onclick="closeSearch()" style="flex:1;">閉じる</button>
+                <button class="btn-main" onclick="searchUser()" style="flex:1;">検索</button>
+            </div>
+            <div id="search-result" style="margin-top:15px; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <nav id="main-nav" class="nav-bar">
+        <div class="nav-item" onclick="showScreen('screen-timeline')">🏠</div>
+        <div class="nav-item" onclick="showScreen('screen-chat-list')">💬</div>
+        <div class="nav-item" onclick="showScreen('screen-post')">➕</div>
+        <div class="nav-item" onclick="showScreen('screen-profile')">👤</div>
+    </nav>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
