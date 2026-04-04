@@ -13,19 +13,18 @@
             --line-bg: #7494c0;
         }
 
-        /* スマホで横揺れしないための魔法の呪文 */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html, body { 
             width: 100%; 
             height: 100%; 
             overflow: hidden; 
             background-color: var(--mizu-bg); 
-            position: fixed; /* 勝手にスクロールさせない */
+            position: fixed;
         }
 
         .app-container { 
             width: 100%; 
-            max-width: 500px; /* パソコンで見た時の最大幅 */
+            max-width: 500px;
             height: 100%; 
             margin: 0 auto; 
             background: white; 
@@ -37,14 +36,13 @@
         .screen { 
             display: none; 
             width: 100%; 
-            height: calc(100% - 60px); /* 下のナビ分を引く */
+            height: calc(100% - 60px); 
             overflow-y: auto; 
             background: white; 
             flex-direction: column; 
         }
         .screen.active { display: flex; }
 
-        /* ヘッダー */
         .header, .line-header { 
             width: 100%;
             height: 60px;
@@ -57,22 +55,24 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            position: relative;
         }
 
-        /* タイムライン */
         .content-list { padding: 10px; display: flex; flex-direction: column; gap: 15px; }
         .post-card { border: 1px solid var(--mizu-border); border-radius: 8px; overflow: hidden; background: white; width: 100%; }
         .post-card video, .post-card img { width: 100%; display: block; background: #000; }
-        .post-card div { padding: 10px; font-size: 14px; }
+        
+        /* 【修正】投稿主の情報を表示 */
+        .post-header { padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; }
+        .post-avatar { width: 30px; height: 30px; border-radius: 50%; background: #ddd; object-fit: cover; }
+        .post-info { font-size: 14px; }
 
-        /* フォーム入力 */
         .form-container { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        input { padding: 12px; border: 1px solid #ccc; border-radius: 8px; width: 100%; font-size: 16px; }
+        input[type="text"], input[type="email"], input[type="file"] { padding: 12px; border: 1px solid #ccc; border-radius: 8px; width: 100%; font-size: 16px; }
 
         .btn-main { background: var(--mizu-blue); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
         .btn-sub { background: #eee; border: none; padding: 10px; border-radius: 8px; }
 
-        /* ナビゲーションバー */
         .nav-bar { 
             height: 60px; 
             border-top: 1px solid var(--mizu-border); 
@@ -84,11 +84,10 @@
         }
         .nav-item { font-size: 24px; cursor: pointer; flex: 1; text-align: center; line-height: 60px; }
 
-        /* トーク一覧 */
         .chat-user-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; width: 100%; }
-        .chat-user-avatar { width: 45px; height: 45px; border-radius: 15px; background: #ddd; margin-right: 12px; flex-shrink: 0; }
+        /* 【修正】アバターを画像に */
+        .chat-user-avatar { width: 45px; height: 45px; border-radius: 15px; background: #ddd; margin-right: 12px; flex-shrink: 0; object-fit: cover; }
         
-        /* チャット画面 */
         .line-chat-area { flex-grow: 1; background: var(--line-bg); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         .msg-bubble { max-width: 80%; padding: 10px; border-radius: 15px; background: white; font-size: 14px; word-wrap: break-word; }
         .msg-me { background: var(--line-green); align-self: flex-end; }
@@ -96,10 +95,15 @@
 
         /* プロフィール */
         .ig-header { padding: 20px; display: flex; align-items: center; width: 100%; }
-        .ig-avatar { width: 65px; height: 65px; border-radius: 50%; background: #ddd; margin-right: 15px; flex-shrink: 0; }
+        /* 【修正】アバターを画像に */
+        .ig-avatar { width: 65px; height: 65px; border-radius: 50%; background: #ddd; margin-right: 15px; flex-shrink: 0; object-fit: cover; }
         .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; width: 100%; }
         .ig-post-item { aspect-ratio: 1/1; background: #eee; overflow: hidden; }
         .ig-post-item video, .ig-post-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* 【追加】プロフ画像変更オーバーレイ */
+        .avatar-container { position: relative; cursor: pointer; }
+        .avatar-edit-label { position: absolute; bottom: 0; right: 15px; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 2px 5px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -158,7 +162,11 @@
 
     <div id="screen-profile" class="screen">
         <div class="ig-header">
-            <div class="ig-avatar"></div>
+            <div class="avatar-container" onclick="document.getElementById('prof-avatar-input').click()">
+                <img id="prof-avatar-img" class="ig-avatar" src="">
+                <div class="avatar-edit-label">変更</div>
+                <input type="file" id="prof-avatar-input" accept="image/*" style="display:none;" onchange="updateProfileAvatar()">
+            </div>
             <div style="text-align: center; flex-grow: 1;">
                 <strong id="post-count" style="font-size: 20px;">0</strong><br><span style="font-size: 12px;">投稿</span>
             </div>
