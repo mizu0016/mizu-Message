@@ -3,82 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MizukiConnect - Start</title>
+    <title>MizukiConnect</title>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; background: #000; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-        /* 多国利用OK画面（スタート画面） */
-        .lang-select { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; width: 80%; max-width: 400px; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; transition: 0.3s; }
-        .btn-jp { background: #ff0050; color: white; } /* TikTok風カラー */
-        .btn-en { background: #00f2ea; color: black; }
+        /* 基本スタイル */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #000; color: white; }
+        .screen { display: none; height: 100vh; flex-direction: column; }
+        .active { display: flex; }
+        input, button { border-radius: 8px; border: none; padding: 12px; margin: 5px; }
         
-        /* 入力画面（非表示） */
-        #registration { display: none; width: 90%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #222; color: white; box-sizing: border-box; }
-        .error { color: #ff0050; font-size: 12px; text-align: left; }
+        /* 1. 多国利用OK（スタート画面） */
+        #start-screen { align-items: center; justify-content: center; background: linear-gradient(45deg, #050505, #222); }
+        .lang-btn { width: 200px; margin: 10px; cursor: pointer; font-weight: bold; }
+
+        /* 2. ID・名前設定 */
+        #reg-screen { align-items: center; justify-content: center; }
+        .error-msg { color: #ff3b30; font-size: 12px; height: 15px; }
+
+        /* 3. メッセージ機能（LINE風） */
+        #chat-screen { background: #7494be; }
+        #chat-area { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
+        .msg-bubble { max-width: 70%; padding: 10px; margin: 5px; border-radius: 15px; color: #000; position: relative; }
+        .mine { align-self: flex-end; background: #8de055; }
+        .others { align-self: flex-start; background: #fff; }
+        .edit-btn { font-size: 10px; background: rgba(0,0,0,0.1); cursor: pointer; margin-left: 5px; }
+
+        /* 4. プロフィール（インスタ風） */
+        #profile-screen { background: #000; }
+        .profile-header { display: flex; padding: 20px; align-items: center; }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; background: #333; margin-right: 20px; }
+        .stats { display: flex; flex: 1; justify-content: space-around; text-align: center; }
+        .post-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .grid-item { aspect-ratio: 1/1; background: #262626; }
+
+        /* ナビゲーションバー */
+        .nav-bar { display: flex; justify-content: space-around; background: #000; border-top: 1px solid #262626; padding: 10px 0; position: fixed; bottom: 0; width: 100%; }
+        .nav-item { cursor: pointer; color: #fff; text-decoration: none; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="start-screen" class="lang-select">
+    <div id="start-screen" class="screen active">
         <h1>MizukiConnect</h1>
-        <p>Select your language / 言語を選択</p>
-        <button class="btn btn-jp" onclick="goToReg('jp')">日本語 / Japanese</button>
-        <button class="btn btn-en" onclick="goToReg('en')">English / 英語</button>
-        <button class="btn" style="background:#555" onclick="goToReg('ko')">한국어 / Korean</button>
+        <button class="lang-btn" style="background:#fff;" onclick="setLang('jp')">日本語</button>
+        <button class="lang-btn" style="background:#fff;" onclick="setLang('en')">English</button>
     </div>
 
-    <div id="registration">
+    <div id="reg-screen" class="screen">
         <h2 id="reg-title">アカウント作成</h2>
-        
-        <label>ユーザーID (英数字6-20文字)</label>
-        <input type="text" id="mizu-id" placeholder="example123" oninput="validateID()">
-        <div id="id-error" class="error"></div>
+        <input type="text" id="mizu-id" placeholder="ID (英数字6-20文字)" oninput="validateForm()">
+        <div id="id-error" class="error-msg"></div>
+        <input type="text" id="mizu-name" maxlength="17" placeholder="名前 (最大17文字)" oninput="validateForm()">
+        <button id="submit-reg" class="lang-btn" onclick="completeReg()" disabled>スタート</button>
+    </div>
 
-        <label>名前 (最大17文字)</label>
-        <input type="text" id="mizu-name" maxlength="17" placeholder="Mizuki">
-        
-        <button class="btn btn-jp" id="submit-btn" onclick="saveToSheet()" disabled>登録してスタート！</button>
+    <div id="chat-screen" class="screen">
+        <div id="chat-area"></div>
+        <div style="padding: 10px 10px 60px 10px; background: #eee; display: flex; flex-direction: column;">
+            <div style="display:flex;">
+                <input type="text" id="msg-input" style="flex:1; color:#000;" placeholder="メッセージ...">
+                <button onclick="sendMsg()" style="background:#06c755; color:#fff;">送信</button>
+            </div>
+            <div style="margin-top:5px;">
+                <input type="file" id="file-input" style="font-size:10px; color:#000;">
+            </div>
+        </div>
+        <nav class="nav-bar">
+            <span class="nav-item" onclick="switchScreen('chat-screen')">💬</span>
+            <span class="nav-item" onclick="switchScreen('profile-screen')">👤</span>
+        </nav>
+    </div>
+
+    <div id="profile-screen" class="screen">
+        <div class="profile-header">
+            <div class="avatar"></div>
+            <div class="stats">
+                <div><b>0</b><br>投稿</div>
+                <div><b>0</b><br>フォロワー</div>
+                <div><b>0</b><br>フォロー中</div>
+            </div>
+        </div>
+        <div style="padding:10px;"><b id="display-name"></b></div>
+        <div class="post-grid">
+            <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
+        </div>
+        <nav class="nav-bar">
+            <span class="nav-item" onclick="switchScreen('chat-screen')">💬</span>
+            <span class="nav-item" onclick="switchScreen('profile-screen')">👤</span>
+        </nav>
     </div>
 
     <script>
-        let selectedLang = 'jp';
+        let userData = { id: '', name: '', lang: 'jp' };
+        let messages = [];
+        const SHEET_URL = "https://script.google.com/macros/s/YOUR_GAS_DEPLOY_ID/exec";
 
-        function goToReg(lang) {
-            selectedLang = lang;
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('registration').style.display = 'block';
-            if(lang === 'en') document.getElementById('reg-title').innerText = 'Create Account';
+        function setLang(l) {
+            userData.lang = l;
+            document.getElementById('reg-title').innerText = (l === 'jp') ? 'アカウント作成' : 'Create Account';
+            switchScreen('reg-screen');
         }
 
-        // 瑞希さんの絶対ルール：IDバリデーション
-        function validateID() {
-            const idInput = document.getElementById('mizu-id');
-            const errorDiv = document.getElementById('id-error');
-            const btn = document.getElementById('submit-btn');
-            const idValue = idInput.value;
-            
-            const regex = /^[a-zA-Z0-9]+$/; // 英数字のみ
-            
-            if (idValue.length < 6 || idValue.length > 20) {
-                errorDiv.innerText = "IDは6文字から20文字までだよ！";
-                btn.disabled = true;
-            } else if (!regex.test(idValue)) {
-                errorDiv.innerText = "IDは英数字だけで書いてね！";
-                btn.disabled = true;
-            } else {
-                errorDiv.innerText = "";
-                btn.disabled = false;
-            }
-        }
-
-        function saveToSheet() {
+        function validateForm() {
             const id = document.getElementById('mizu-id').value;
             const name = document.getElementById('mizu-name').value;
+            const error = document.getElementById('id-error');
+            const btn = document.getElementById('submit-reg');
             
-            // ここで瑞希さんのスプレッドシート（1j7ROuKh...）にデータを送るGASを呼び出す
-            alert("スプレッドシートに保存中...\nID: " + id + "\nName: " + name);
-            // 実際は google.script.run を使ってGASに飛ばすよ
+            const idRegex = /^[a-zA-Z0-9]{6,20}$/;
+            const isValidId = idRegex.test(id);
+            
+            error.innerText = isValidId ? "" : "IDは英数字6-20文字で入力してね";
+            btn.disabled = !(isValidId && name.length > 0 && name.length <= 17);
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function completeReg() {
+            userData.id = document.getElementById('mizu-id').value;
+            userData.name = document.getElementById('mizu-name').value;
+            document.getElementById('display-name').innerText = userData.name;
+            
+            // スプレッドシート保存（非同期送信）
+            fetch(`${SHEET_URL}?id=${userData.id}&name=${encodeURIComponent(userData.name)}&action=register`);
+            switchScreen('chat-screen');
+        }
+
+        function sendMsg() {
+            const input = document.getElementById('msg-input');
+            const fileInput = document.getElementById('file-input');
+            if (!input.value && !fileInput.files[0]) return;
+
+            const msg = {
+                id: Date.now(),
+                text: input.value,
+                time: Date.now(),
+                sender: userData.name,
+                hasFile: fileInput.files[0] ? fileInput.files[0].name : null
+            };
+            
+            messages.push(msg);
+            input.value = '';
+            fileInput.value = '';
+            renderChat();
+        }
+
+        function renderChat() {
+            const area = document.getElementById('chat-area');
+            area.innerHTML = '';
+            const now = Date.now();
+
+            messages.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `msg-bubble mine`;
+                let content = `<b>${m.sender}</b><br>${m.text}`;
+                if (m.hasFile) content += `<br>📎 ${m.hasFile}`;
+                
+                // 24時間以内なら追記ボタン表示
+                if (now - m.time < 86400000) {
+                    content += ` <span class="edit-btn" onclick="addText(${m.id})">[追記]</span>`;
+                }
+                
+                div.innerHTML = content;
+                area.appendChild(div);
+            });
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function addText(msgId) {
+            const extra = prompt("追加する文字を入力してください（取り消し不可）:");
+            if (extra) {
+                const msg = messages.find(m => m.id === msgId);
+                msg.text += " " + extra;
+                renderChat();
+            }
         }
     </script>
 </body>
