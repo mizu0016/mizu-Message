@@ -1,7 +1,5 @@
-const GITHUB_TOKEN = "ghp_qdYkDtmSZ68ARqQ3L4EeW86W8ySo9L1VA6MM"; 
-const REPO_OWNER = "mizu0016"; 
-const REPO_NAME = "mizu-Message"; // ハイフンを忘れずに！
-const DATA_FILE = "data/mizu_data.json"; // さっき作ったファイル名と合わせる
+// ミズが教えてくれたURLだよ
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxJwArm-HZHKbmf1Dcvm6cTXDAtHjK1RUVc2JQrOLjJ4gFxF6vVpn2lK01QgIRhso4CeA/exec";
 
 let myUser = JSON.parse(localStorage.getItem('mizu_user')) || null;
 let allData = { posts: [], messages: [], users: [] };
@@ -12,7 +10,6 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if(target) target.classList.add('active');
-    
     if(myUser) document.getElementById('main-nav').style.display = 'flex';
     
     if(screenId === 'screen-chat-list') renderChatList();
@@ -20,31 +17,32 @@ function showScreen(screenId) {
     if(screenId === 'screen-profile') renderProfile();
 }
 
+// 【重要】GASからデータを読み込む
 async function loadData() {
     try {
-        const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE}`, {
-            headers: { Authorization: `token ${GITHUB_TOKEN}` }
-        });
-        if(res.ok) {
-            const json = await res.json();
-            allData = JSON.parse(decodeURIComponent(escape(atob(json.content))));
+        const res = await fetch(GAS_URL);
+        const json = await res.json();
+        if(json && json.length > 0) {
+            // スプレッドシートの最新の行にあるデータを読み込む
+            const lastRowData = json[json.length - 1][3]; // 4列目にJSONが入っている想定
+            allData = JSON.parse(lastRowData);
         }
-    } catch (e) { console.log("Data load error"); }
+    } catch (e) { console.log("読み込みエラー:", e); }
 }
 
+// 【重要】GASへデータを保存する
 async function saveData() {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(allData))));
-    const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE}`, {
-        headers: { Authorization: `token ${GITHUB_TOKEN}` }
-    });
-    let sha = res.ok ? (await res.json()).sha : "";
-
-    await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${DATA_FILE}`, {
-        method: "PUT",
-        headers: { Authorization: `token ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "Update Data", content, sha })
-    });
+    try {
+        await fetch(GAS_URL, {
+            method: "POST",
+            mode: "no-cors", // これを入れるとエラーが出にくくなるよ
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(allData)
+        });
+    } catch (e) { console.log("保存エラー:", e); }
 }
+
+// --- あとの機能（検索、チャット、投稿）は前と同じだよ ---
 
 function openSearch() { document.getElementById('search-modal').style.display = 'flex'; }
 function closeSearch() { document.getElementById('search-modal').style.display = 'none'; }
@@ -173,10 +171,10 @@ function renderTimeline() {
     `).join('');
 }
 
-// 起動処理
+// 起動時にデータを読み込む
 (async () => {
+    await loadData();
     if(myUser) {
-        await loadData();
         showScreen('screen-timeline');
     }
 })();
