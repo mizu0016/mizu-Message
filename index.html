@@ -1,76 +1,35 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MizukiConnect</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <style>
-        body { font-family: sans-serif; margin: 0; background: #000; color: #fff; text-align: center; }
-        .screen { display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
-        .active { display: flex; }
-        input { width: 80%; max-width: 300px; padding: 15px; margin: 10px; border-radius: 10px; border: none; background: #222; color: #fff; }
-        .btn { width: 260px; padding: 15px; border-radius: 30px; border: none; background: #fff; color: #000; font-weight: bold; cursor: pointer; }
-        #home { background: #fff; color: #000; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Googleログインサンプル</title>
+  <!-- Googleのライブラリを読み込む -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-    <div id="sc1" class="screen active">
-        <h1>MizukiConnect</h1>
-        <input type="text" id="m-id" placeholder="マイID (6文字以上)">
-        <input type="text" id="m-name" placeholder="お名前">
-        <button class="btn" onclick="toSc2()">Google連携へ進む</button>
-    </div>
+  <!-- ログインボタンの表示エリア -->
+  <div id="g_id_onload"
+       data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="sign_in_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
 
-    <div id="sc2" class="screen">
-        <h2>Googleで本人確認</h2>
-        <div id="g_id_onload"
-             data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
-             data-callback="onLogin"
-             data-auto_prompt="false" 
-             data-itp_support="true">
-        </div>
-        <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
-        <p style="font-size:12px; color:#555; margin-top:20px;">※ボタンが反応しない場合は一度リロードしてね</p>
-    </div>
+  <script>
+    // ログイン成功時に呼ばれるコールバック関数
+    function handleCredentialResponse(response) {
+      console.log("Encoded JWT ID token: " + response.credential);
+      // ここでJWTトークンをバックエンドに送信して検証する
+    }
+  </script>
 
-    <div id="home" class="screen">
-        <h1 style="color:#000;">🏠 Home</h1>
-        <p id="disp-id" style="color:#06c755; font-size:24px; font-weight:bold;"></p>
-        <button class="btn" style="background:#333; color:#fff;" onclick="localStorage.clear(); location.reload();">ログアウト</button>
-    </div>
-
-    <script>
-        const SHEET = "https://script.google.com/macros/s/AKfycbw-E_MHkIPI8VjStwkUGjJOwdd1cPqoRJHHX-2LSt6ssL4J7bI4RXhqOjHw_WBS1KYNzw/exec";
-
-        function toSc2() {
-            if(document.getElementById('m-id').value.length < 6) return alert("IDは6文字以上！");
-            document.getElementById('sc1').classList.remove('active');
-            document.getElementById('sc2').classList.add('active');
-        }
-
-        function onLogin(res) {
-            const user = JSON.parse(atob(res.credential.split('.')[1]));
-            const mid = document.getElementById('m-id').value;
-            const mname = document.getElementById('m-name').value || "名無し";
-
-            // スプレッドシートに送信
-            fetch(`${SHEET}?email=${user.email}&id=${mid}&name=${mname}`, { mode: 'no-cors' });
-
-            // 記憶して強制リロード（これで画面を完全にリセットする）
-            localStorage.setItem('mizu_logged', mid);
-            location.reload(); 
-        }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('mizu_logged');
-            if (saved) {
-                document.getElementById('sc1').classList.remove('active');
-                document.getElementById('disp-id').innerText = "@" + saved;
-                document.getElementById('home').classList.add('active');
-            }
-        }
-    </script>
 </body>
 </html>
