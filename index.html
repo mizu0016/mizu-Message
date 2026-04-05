@@ -10,42 +10,42 @@
         .screen { display: none; height: 100vh; flex-direction: column; }
         .active { display: flex; }
         input { border-radius: 8px; border: none; padding: 12px; margin: 10px; background: #1a1a1a; color: white; width: 80%; }
-        
-        /* 1. 多国利用OK（スタート画面） */
-        #start-screen { align-items: center; justify-content: center; }
         .btn { width: 220px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; }
-
-        /* 2. ID検索画面（LINEお手本・トーク一覧風） */
+        
+        /* ID検索画面（LINE風） */
         #search-screen { background: #fff; color: #000; }
-        .header { padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .search-bar { background: #f4f4f4; margin: 10px; padding: 10px; border-radius: 10px; color: #888; text-align: center; }
+        .header { padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .search-bar { background: #f4f4f4; margin: 10px; padding: 10px; border-radius: 10px; color: #888; text-align: center; font-size: 14px; }
         .user-item { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f9f9f9; }
         .user-icon { width: 50px; height: 50px; border-radius: 18px; background: #eee; margin-right: 15px; }
 
-        /* 3. チャット画面（LINE風） */
+        /* チャット画面（LINE風） */
         #chat-screen { background: var(--line-bg); }
         #chat-area { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-        .bubble { max-width: 70%; padding: 10px; margin: 5px; border-radius: 15px; color: #000; position: relative; font-size: 14px; }
+        .bubble { max-width: 70%; padding: 10px; margin: 5px; border-radius: 15px; color: #000; font-size: 14px; position: relative; }
         .mine { align-self: flex-end; background: #8de055; border-top-right-radius: 2px; }
         .others { align-self: flex-start; background: #fff; border-top-left-radius: 2px; }
+        .edit-label { font-size: 10px; color: #666; cursor: pointer; margin-left: 5px; }
 
-        /* 4. プロフィール（インスタ風） */
+        /* プロフィール（インスタ風） */
+        #profile-screen { background: #000; }
         .profile-header { display: flex; padding: 20px; align-items: center; border-bottom: 1px solid #262626; }
         .avatar { width: 77px; height: 77px; border-radius: 50%; background: #333; margin-right: 20px; }
+        .stats { display: flex; flex: 1; justify-content: space-around; text-align: center; font-size: 14px; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 2px; }
         .grid-item { aspect-ratio: 1/1; background: #262626; }
 
-        /* ナビゲーション */
-        .nav { display: flex; justify-content: space-around; background: #fff; border-top: 1px solid #eee; padding: 10px 0; color: #000; position: fixed; bottom: 0; width: 100%; }
+        /* ナビゲーション（LINE風） */
+        .nav { display: flex; justify-content: space-around; background: #fff; border-top: 1px solid #eee; padding: 10px 0; color: #000; position: fixed; bottom: 0; width: 100%; z-index: 100; }
         .dark-nav { background: #000; border-color: #262626; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="start-screen" class="screen active">
-        <h1 style="font-size:32px;">MizukiConnect</h1>
-        <button class="btn" style="background:var(--line-green); color:#fff;" onclick="setLang('jp')">日本語でスタート</button>
-        <button class="btn" style="background:#fff; color:#000;" onclick="setLang('en')">English Start</button>
+        <h1 style="font-size:32px; margin-bottom:40px;">MizukiConnect</h1>
+        <button class="btn" style="background:var(--line-green); color:#fff;" onclick="switchScreen('reg-screen')">日本語でスタート</button>
+        <button class="btn" style="background:#fff; color:#000;" onclick="switchScreen('reg-screen')">English Start</button>
     </div>
 
     <div id="reg-screen" class="screen" style="align-items:center; justify-content:center;">
@@ -73,11 +73,15 @@
     </div>
 
     <div id="chat-screen" class="screen">
-        <div class="header" style="background:#fff; color:#000;">チャットルーム <span onclick="switchScreen('search-screen')">✕</span></div>
+        <div class="header" style="background:#fff; color:#000;">
+            <span onclick="switchScreen('search-screen')">＜</span> 
+            <span id="chat-title">チャット</span>
+            <span>📞</span>
+        </div>
         <div id="chat-area"></div>
-        <div style="padding:10px 10px 70px; background:#fff; display:flex;">
-            <input type="text" id="msg-input" style="background:#eee; color:#000; flex:1;" placeholder="Aa">
-            <button onclick="sendMsg()" style="color:var(--line-green); background:none; font-weight:bold;">送信</button>
+        <div style="padding:10px 10px 70px; background:#fff; display:flex; align-items:center;">
+            <input type="text" id="msg-input" style="background:#eee; color:#000; flex:1; margin:0 10px;" placeholder="Aa">
+            <button onclick="sendMsg()" style="color:var(--line-green); background:none; font-weight:bold; font-size:16px;">送信</button>
         </div>
         <div class="nav">
             <span onclick="switchScreen('search-screen')">🏠</span>
@@ -89,12 +93,16 @@
     <div id="profile-screen" class="screen">
         <div class="profile-header">
             <div class="avatar"></div>
-            <div style="display:flex; flex:1; justify-content:space-around; text-align:center;">
-                <div><b>0</b><br>投稿</div><div><b>0</b><br>フォロワー</div><div><b>0</b><br>フォロー</div>
+            <div class="stats">
+                <div><b>0</b><br>投稿</div>
+                <div><b>0</b><br>フォロワー</div>
+                <div><b>0</b><br>フォロー</div>
             </div>
         </div>
-        <div style="padding:15px;"><b id="display-name"></b></div>
-        <div class="grid"><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div></div>
+        <div style="padding:15px;"><b id="display-name" style="font-size:16px;"></b></div>
+        <div class="grid">
+            <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
+        </div>
         <div class="nav dark-nav">
             <span onclick="switchScreen('search-screen')">🏠</span>
             <span onclick="switchScreen('chat-screen')">💬</span>
@@ -103,6 +111,9 @@
     </div>
 
     <script>
+        // 瑞希さんが発行してくれた最新のURL
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbzP7Ek1gRQTDWP2UeNWGn1DgEqHLYAHZmbuObcrN1PzeErRjUIHdgy6tIoud_T6ZLm2rw/exec";
+
         let userData = { email: '', id: '', name: '' };
         let messages = [];
 
@@ -111,31 +122,27 @@
             document.getElementById(id).classList.add('active');
         }
 
-        function setLang(l) { switchScreen('reg-screen'); }
-
         function vId() {
             const id = document.getElementById('mizu-id').value;
             const btn = document.getElementById('reg-btn');
             btn.disabled = !(/^[a-zA-Z0-9]{6,20}$/.test(id));
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             const email = document.getElementById('user-email').value;
             const id = document.getElementById('mizu-id').value;
             const name = document.getElementById('mizu-name').value;
 
-            // ローカルストレージに保存（同じメアドならそのまま通す）
-            const saved = localStorage.getItem('mizu_user_' + email);
-            if (saved) {
-                userData = JSON.parse(saved);
-            } else {
-                userData = { email, id, name };
-                localStorage.setItem('mizu_user_' + email, JSON.stringify(userData));
-                // スプレッドシートへ送信
-                fetch(`https://script.google.com/macros/s/YOUR_GAS_ID/exec?email=${email}&id=${id}&name=${encodeURIComponent(name)}`);
-            }
-            document.getElementById('display-name').innerText = userData.name;
-            switchScreen('search-screen'); // いきなりチャットではなくID検索（トーク一覧）画面へ
+            // スプレッドシートへ送信
+            const finalUrl = `${SHEET_URL}?email=${encodeURIComponent(email)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}`;
+            fetch(finalUrl, { mode: 'no-cors' });
+
+            // ローカル保存（同じメアドなら次からパス）
+            userData = { email, id, name };
+            localStorage.setItem('mizu_user_' + email, JSON.stringify(userData));
+            
+            document.getElementById('display-name').innerText = name;
+            switchScreen('search-screen'); // ID検索（トーク一覧）画面へ
         }
 
         function sendMsg() {
@@ -150,15 +157,16 @@
         function renderChat() {
             const area = document.getElementById('chat-area');
             area.innerHTML = messages.map(m => `
-                <div class="bubble ${m.mine ? 'mine' : 'others'}">${m.text}
-                    ${(Date.now() - m.time < 86400000) ? `<small onclick="addText(${m.time})" style="cursor:pointer; opacity:0.5;">[追記]</small>` : ''}
+                <div class="bubble ${m.mine ? 'mine' : 'others'}">
+                    ${m.text}
+                    ${(Date.now() - m.time < 86400000) ? `<span class="edit-label" onclick="addText(${m.time})">[追記]</span>` : ''}
                 </div>
             `).join('');
             area.scrollTop = area.scrollHeight;
         }
 
         function addText(time) {
-            const extra = prompt("文字を追加します（24h以内）:");
+            const extra = prompt("文字を追加します（24時間以内・取消不可）:");
             if (extra) {
                 const msg = messages.find(m => m.time === time);
                 msg.text += " " + extra;
