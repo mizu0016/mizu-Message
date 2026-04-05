@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MizukiConnect</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root { --line-green: #06c755; --line-bg: #7494be; }
         body { font-family: sans-serif; margin: 0; background: #000; color: white; text-align: center; }
         .screen { display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
         .active { display: flex; }
-        .btn { width: 260px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; }
-        input { border-radius: 8px; border: none; padding: 15px; margin: 10px; width: 80%; max-width: 300px; font-size: 16px; }
+        .btn { width: 260px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; background: #fff; color: #000; }
+        input { border-radius: 8px; border: none; padding: 15px; margin: 10px; width: 80%; max-width: 300px; font-size: 16px; background: #222; color: #fff; }
         
         /* ホーム画面 */
         #home-screen { background: #fff; color: #000; justify-content: flex-start; }
@@ -23,35 +22,22 @@
 
     <div id="id-setup-screen" class="screen active">
         <h1>MizukiConnect</h1>
-        <p>好きなIDを決めてね</p>
+        <p>好きなIDを決めてスタート！</p>
         <input type="text" id="mizu-id" placeholder="マイID (6文字以上)" oninput="vId()">
         <input type="text" id="mizu-name" placeholder="名前 (表示名)">
-        <button id="next-btn" class="btn" style="background:#fff; color:#000;" onclick="goToLogin()" disabled>次へ進む</button>
-        <div style="margin-top:30px; font-size:12px; color:#555; text-decoration:underline;" onclick="forceStart()">ログインできない場合はここをタップ</div>
-    </div>
-
-    <div id="login-screen" class="screen">
-        <h2>Googleで本人確認</h2>
-        <div style="margin: 20px auto;">
-            <div id="g_id_onload"
-                 data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
-            </div>
-            <div class="g_id_signin" data-type="standard"></div>
-        </div>
-        <button class="btn" style="background:none; color:#888;" onclick="switchScreen('id-setup-screen')">戻る</button>
+        <button id="next-btn" class="btn" onclick="startApp()" disabled>アプリを始める</button>
     </div>
 
     <div id="home-screen" class="screen">
         <div class="header">トーク一覧</div>
-        <div style="padding: 20px; text-align: center;">
-            <p>🎉 ログイン成功！</p>
-            <p id="display-my-id" style="color:var(--line-green); font-weight:bold;"></p>
+        <div style="padding: 40px; text-align: center;">
+            <p>🎉 MizukiConnectへようこそ！</p>
+            <p id="display-my-id" style="color:var(--line-green); font-weight:bold; font-size:20px;"></p>
+            <button class="btn" style="background:#eee;" onclick="logout()">ログアウトしてやり直す</button>
         </div>
         <div class="nav">
             <div onclick="location.reload()">🏠</div>
-            <div onclick="alert('チャット準備中！')">💬</div>
+            <div onclick="alert('チャット機能、絶賛開発中！')">💬</div>
         </div>
     </div>
 
@@ -68,46 +54,36 @@
             document.getElementById('next-btn').disabled = (id.length < 6);
         }
 
-        function goToLogin() {
-            switchScreen('login-screen');
-        }
-
-        // Googleログインが成功した時の「強制」処理
-        function handleCredentialResponse(response) {
-            console.log("Login success, redirecting...");
-            
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        // ボタンを押したら即開始！
+        function startApp() {
             const mid = document.getElementById('mizu-id').value;
             const mname = document.getElementById('mizu-name').value || "名無し";
 
-            // スプレッドシートに送信
-            fetch(`${SHEET_URL}?email=${encodeURIComponent(payload.email)}&id=${encodeURIComponent(mid)}&name=${encodeURIComponent(mname)}`, { mode: 'no-cors' });
+            // スプレッドシートに「登録しましたよ」ってこっそり送る
+            fetch(`${SHEET_URL}?email=skip-google&id=${encodeURIComponent(mid)}&name=${encodeURIComponent(mname)}`, { mode: 'no-cors' });
 
             // ログイン状態を保存
-            localStorage.setItem('mizuki_login_ok', 'true');
+            localStorage.setItem('mizuki_logged_in', 'true');
             localStorage.setItem('mizuki_my_id', mid);
 
-            // 【重要】これがあれば無限ループしない！強制的に画面を切り替える
-            setTimeout(() => {
-                enterApp(mid);
-            }, 500);
+            enterHome(mid);
         }
 
-        function enterApp(id) {
-            document.getElementById('display-my-id').innerText = "ID: @" + id;
+        function enterHome(id) {
+            document.getElementById('display-my-id').innerText = "@" + id;
             switchScreen('home-screen');
         }
 
-        // 強制ログインボタン用
-        function forceStart() {
-            localStorage.setItem('mizuki_login_ok', 'true');
-            enterApp("GuestUser");
+        function logout() {
+            localStorage.clear();
+            location.reload();
         }
 
-        // ページ読み込み時にログイン済みかチェック
+        // ページ読み込み時にチェック
         window.onload = () => {
-            if (localStorage.getItem('mizuki_login_ok') === 'true') {
-                enterApp(localStorage.getItem('mizuki_my_id') || "User");
+            const isLogin = localStorage.getItem('mizuki_logged_in');
+            if (isLogin === 'true') {
+                enterHome(localStorage.getItem('mizuki_my_id'));
             }
         }
     </script>
