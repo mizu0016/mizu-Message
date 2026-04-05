@@ -3,112 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mizuki　messge</title>
+    <title>MizukiConnect</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root { --line-green: #06c755; --line-bg: #7494be; }
+        :root { --line-green: #06c755; --line-bg: #7494be; --mizu-black: #1a1a1a; }
         body { font-family: -apple-system, sans-serif; margin: 0; background: #000; color: white; overflow-x: hidden; }
-        .screen { display: none; height: 100vh; flex-direction: column; }
+        .screen { display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .active { display: flex; }
-        .btn { width: 250px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; }
-        input { border-radius: 8px; border: none; padding: 12px; margin: 10px; background: #1a1a1a; color: white; width: 80%; max-width: 300px; }
+        .btn { width: 250px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:disabled { background: #555 !important; color: #888; cursor: not-allowed; }
+        input { border-radius: 8px; border: none; padding: 15px; margin: 10px; background: var(--mizu-black); color: white; width: 80%; max-width: 300px; font-size: 16px; }
         
-        /* 検索・トーク一覧画面（LINE風） */
-        #search-screen { background: #fff; color: #000; }
-        .header { padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .search-bar { background: #f4f4f4; margin: 10px; padding: 10px; border-radius: 10px; color: #888; text-align: center; font-size: 14px; }
-        .user-item { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f9f9f9; }
-        .user-icon { width: 50px; height: 50px; border-radius: 18px; background: #eee; margin-right: 15px; }
-
-        /* チャット画面（LINE風） */
-        #chat-screen { background: var(--line-bg); }
-        #chat-area { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-        .bubble { max-width: 70%; padding: 10px; margin: 5px; border-radius: 15px; color: #000; font-size: 14px; }
-        .mine { align-self: flex-end; background: #8de055; border-top-right-radius: 2px; }
-        .others { align-self: flex-start; background: #fff; border-top-left-radius: 2px; }
-        
-        /* ナビゲーション */
+        /* 検索・トーク画面（LINE風） */
+        #search-screen { background: #fff; color: #000; justify-content: flex-start; }
+        .header { width: 100%; padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; box-sizing: border-box; }
         .nav { display: flex; justify-content: space-around; background: #fff; border-top: 1px solid #eee; padding: 10px 0; color: #000; position: fixed; bottom: 0; width: 100%; }
     </style>
 </head>
 <body>
 
-    <div id="start-screen" class="screen active">
-        <h1>MizukiConnect</h1>
-        <button class="btn" style="background:var(--line-green); color:#fff;" onclick="switchScreen('reg-screen')">スタート</button>
+    <div id="id-setup-screen" class="screen active">
+        <h1 style="font-size: 28px; margin-bottom: 5px;">MizukiConnect</h1>
+        <p style="color: #888; margin-bottom: 30px;">まずはあなた専用のIDを決めてね</p>
+        
+        <input type="text" id="mizu-id" placeholder="マイID (英数字6-20)" oninput="vId()">
+        <input type="text" id="mizu-name" maxlength="17" placeholder="表示名 (最大17文字)">
+        
+        <button id="next-btn" class="btn" style="background: #fff; color: #000;" onclick="goToLogin()" disabled>次へ進む</button>
+        <p id="id-hint" style="font-size: 12px; color: #ff4444; height: 15px;"></p>
     </div>
 
-    <div id="reg-screen" class="screen" style="align-items:center; justify-content:center;">
-        <h2 id="login-status">Login / Sign Up</h2>
+    <div id="login-screen" class="screen">
+        <h2>Googleアカウントで連携</h2>
+        <p style="margin-bottom: 30px; font-size: 14px; color: #ccc;">本人確認をして登録を完了します</p>
         
         <div id="g_id_onload"
              data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
              data-callback="handleCredentialResponse">
         </div>
         <div class="g_id_signin" data-type="standard"></div>
-
-        <div id="mizu-fields" style="display:none; width:100%; text-align:center; flex-direction:column; align-items:center;">
-            <input type="text" id="mizu-id" placeholder="ID (英数字6-20)" oninput="vId()">
-            <input type="text" id="mizu-name" maxlength="17" placeholder="表示名">
-            <button id="reg-btn" class="btn" style="background:var(--line-green); color:#fff;" onclick="completeRegistration()" disabled>登録を完了する</button>
-        </div>
+        
+        <button class="btn" style="background: none; color: #888; font-size: 12px;" onclick="switchScreen('id-setup-screen')">IDをやり直す</button>
     </div>
 
     <div id="search-screen" class="screen">
-        <div class="header">トーク <span>🔍 👤+ ⚙️</span></div>
-        <div class="search-bar">ID検索・キーワード検索</div>
-        <div class="user-item" onclick="switchScreen('chat-screen')">
-            <div class="user-icon"></div>
-            <div><b>公式ガイド</b><br><small style="color:gray;">mizu messgeにようこそ</small></div>
+        <div class="header">トーク <span>🔍 👤+</span></div>
+        <div style="margin-top: 50px;">
+            <b>登録が完了しました！</b><br>
+            <p id="welcome-msg" style="color: #06c755;"></p>
         </div>
-        <div class="nav"><span onclick="switchScreen('search-screen')">🏠</span><span onclick="switchScreen('chat-screen')">💬</span></div>
-    </div>
-
-    <div id="chat-screen" class="screen">
-        <div class="header" style="background:#fff; color:#000;"><span onclick="switchScreen('search-screen')">＜</span> チャット</div>
-        <div id="chat-area"></div>
+        <div class="nav"><span>🏠</span><span>💬</span></div>
     </div>
 
     <script>
-        // 瑞希さんがさっき送ってくれた /exec URLをセット済み！
-        const SHEET_URL = "https://script.google.com/macros/s/AKfycbyvZVEGf4rymBzEAiKtHEfJF93GUJoLftI1M30xdYGTReyfSzlUe20wG3tSQAXumhaQTw/exec";
-
-        let userEmail = "";
+        // 瑞希さんの最新URL
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbw-E_MHkIPI8VjStwkUGjJOwdd1cPqoRJHHX-2LSt6ssL4J7bI4RXhqOjHw_WBS1KYNzw/exec";
+        
+        let tempId = "";
+        let tempName = "";
 
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
+        // IDのバリデーション（英数字6-20文字）
         function vId() {
             const id = document.getElementById('mizu-id').value;
-            document.getElementById('reg-btn').disabled = !(/^[a-zA-Z0-9]{6,20}$/.test(id));
-        }
-
-        function handleCredentialResponse(response) {
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
-            userEmail = payload.email;
-
-            // 登録済みチェック
-            if (localStorage.getItem('mizu_user_' + userEmail)) {
-                switchScreen('search-screen');
+            const btn = document.getElementById('next-btn');
+            const hint = document.getElementById('id-hint');
+            
+            if (id.length > 0 && !/^[a-zA-Z0-9]{6,20}$/.test(id)) {
+                hint.innerText = "IDは英数字6〜20文字で入力してね";
+                btn.disabled = true;
+            } else if (id.length >= 6) {
+                hint.innerText = "";
+                btn.disabled = false;
             } else {
-                document.querySelector('.g_id_signin').style.display = 'none';
-                document.getElementById('login-status').innerText = "ようこそ！ " + payload.name;
-                document.getElementById('mizu-fields').style.display = 'flex';
-                document.getElementById('mizu-name').value = payload.name.substring(0, 17);
+                hint.innerText = "";
+                btn.disabled = true;
             }
         }
 
-        function completeRegistration() {
-            const id = document.getElementById('mizu-id').value;
-            const name = document.getElementById('mizu-name').value;
+        function goToLogin() {
+            tempId = document.getElementById('mizu-id').value;
+            tempName = document.getElementById('mizu-name').value || "名無しさん";
+            switchScreen('login-screen');
+        }
+
+        // Googleログイン成功後の処理
+        function handleCredentialResponse(response) {
+            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            const email = payload.email;
 
             // スプレッドシートへ送信！
-            fetch(`${SHEET_URL}?email=${encodeURIComponent(userEmail)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}`, { mode: 'no-cors' });
+            fetch(`${SHEET_URL}?email=${encodeURIComponent(email)}&id=${encodeURIComponent(tempId)}&name=${encodeURIComponent(tempName)}`, { mode: 'no-cors' });
 
-            localStorage.setItem('mizu_user_' + userEmail, JSON.stringify({id, name}));
+            // ローカルに保存
+            localStorage.setItem('mizu_user', JSON.stringify({id: tempId, name: tempName, email: email}));
+            
+            document.getElementById('welcome-msg').innerText = `ID: @${tempId} でログイン中`;
             switchScreen('search-screen');
+        }
+
+        // すでにログイン済みならスキップ
+        window.onload = () => {
+            const saved = localStorage.getItem('mizu_user');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('welcome-msg').innerText = `ID: @${data.id} でログイン中`;
+                switchScreen('search-screen');
+            }
         }
     </script>
 </body>
