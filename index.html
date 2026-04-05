@@ -9,66 +9,66 @@
         body { font-family: sans-serif; margin: 0; background: #000; color: #fff; text-align: center; }
         .screen { display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
         .active { display: flex; }
-        .btn { width: 260px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; }
-        input { border-radius: 8px; border: none; padding: 15px; margin: 10px; width: 80%; max-width: 300px; font-size: 16px; background: #222; color: #fff; }
+        input { width: 80%; max-width: 300px; padding: 15px; margin: 10px; border-radius: 10px; border: none; background: #222; color: #fff; }
+        .btn { width: 260px; padding: 15px; border-radius: 30px; border: none; background: #fff; color: #000; font-weight: bold; cursor: pointer; }
         #home { background: #fff; color: #000; }
     </style>
 </head>
 <body>
 
-    <div id="step1" class="screen active">
+    <div id="sc1" class="screen active">
         <h1>MizukiConnect</h1>
-        <input type="text" id="m-id" placeholder="マイID (6文字〜)">
-        <input type="text" id="m-name" placeholder="名前">
-        <button class="btn" style="background:#fff;" onclick="toStep2()">次へ</button>
+        <input type="text" id="m-id" placeholder="マイID (6文字以上)">
+        <input type="text" id="m-name" placeholder="お名前">
+        <button class="btn" onclick="toSc2()">Google連携へ進む</button>
     </div>
 
-    <div id="step2" class="screen">
-        <h2>Googleログイン</h2>
+    <div id="sc2" class="screen">
+        <h2>Googleで本人確認</h2>
         <div id="g_id_onload"
              data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
-             data-callback="onLogin">
+             data-callback="onLogin"
+             data-auto_prompt="false" 
+             data-itp_support="true">
         </div>
-        <div class="g_id_signin" data-type="standard"></div>
-        <button class="btn" style="background:none; color:#888;" onclick="location.reload()">戻る</button>
+        <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
+        <p style="font-size:12px; color:#555; margin-top:20px;">※ボタンが反応しない場合は一度リロードしてね</p>
     </div>
 
     <div id="home" class="screen">
-        <h1>🏠 ホーム</h1>
-        <p id="myid-disp" style="font-weight:bold; color:#06c755; font-size:24px;"></p>
-        <button class="btn" style="background:#eee;" onclick="localStorage.clear();location.reload();">ログアウト</button>
+        <h1 style="color:#000;">🏠 Home</h1>
+        <p id="disp-id" style="color:#06c755; font-size:24px; font-weight:bold;"></p>
+        <button class="btn" style="background:#333; color:#fff;" onclick="localStorage.clear(); location.reload();">ログアウト</button>
     </div>
 
     <script>
         const SHEET = "https://script.google.com/macros/s/AKfycbw-E_MHkIPI8VjStwkUGjJOwdd1cPqoRJHHX-2LSt6ssL4J7bI4RXhqOjHw_WBS1KYNzw/exec";
 
-        function toStep2() {
-            if(document.getElementById('m-id').value.length < 6) return alert("IDは6文字以上にしてね");
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'flex';
+        function toSc2() {
+            if(document.getElementById('m-id').value.length < 6) return alert("IDは6文字以上！");
+            document.getElementById('sc1').classList.remove('active');
+            document.getElementById('sc2').classList.add('active');
         }
 
-        // ログイン成功時
         function onLogin(res) {
             const user = JSON.parse(atob(res.credential.split('.')[1]));
-            const id = document.getElementById('m-id').value;
-            const name = document.getElementById('m-name').value || "名無し";
+            const mid = document.getElementById('m-id').value;
+            const mname = document.getElementById('m-name').value || "名無し";
 
-            // シートに送る
-            fetch(`${SHEET}?email=${user.email}&id=${id}&name=${name}`, { mode: 'no-cors' });
+            // スプレッドシートに送信
+            fetch(`${SHEET}?email=${user.email}&id=${mid}&name=${mname}`, { mode: 'no-cors' });
 
-            // 保存して再読み込み（これで無限ループを強制終了！）
-            localStorage.setItem('m_id', id);
+            // 記憶して強制リロード（これで画面を完全にリセットする）
+            localStorage.setItem('mizu_logged', mid);
             location.reload(); 
         }
 
-        // 読み込み時にログイン済みか判定
         window.onload = () => {
-            const savedId = localStorage.getItem('m_id');
-            if (savedId) {
-                document.getElementById('step1').style.display = 'none';
-                document.getElementById('myid-disp').innerText = "@" + savedId;
-                document.getElementById('home').style.display = 'flex';
+            const saved = localStorage.getItem('mizu_logged');
+            if (saved) {
+                document.getElementById('sc1').classList.remove('active');
+                document.getElementById('disp-id').innerText = "@" + saved;
+                document.getElementById('home').classList.add('active');
             }
         }
     </script>
