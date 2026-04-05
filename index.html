@@ -13,22 +13,20 @@
         .btn { width: 250px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; }
         input { border-radius: 8px; border: none; padding: 12px; margin: 10px; background: #1a1a1a; color: white; width: 80%; max-width: 300px; }
         
-        /* LINE風 ID検索画面（トーク一覧） */
+        /* ID検索・トーク一覧 */
         #search-screen { background: #fff; color: #000; }
         .header { padding: 15px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .search-bar { background: #f4f4f4; margin: 10px; padding: 10px; border-radius: 10px; color: #888; text-align: center; font-size: 14px; }
         .user-item { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f9f9f9; }
         .user-icon { width: 50px; height: 50px; border-radius: 18px; background: #eee; margin-right: 15px; }
 
-        /* LINE風 チャット画面 */
+        /* チャット画面 */
         #chat-screen { background: var(--line-bg); }
         #chat-area { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-        .bubble { max-width: 70%; padding: 10px; margin: 5px; border-radius: 15px; color: #000; font-size: 14px; position: relative; }
+        .bubble { max-width: 70%; padding: 10px; margin: 5px; border-radius: 15px; color: #000; font-size: 14px; }
         .mine { align-self: flex-end; background: #8de055; border-top-right-radius: 2px; }
         .others { align-self: flex-start; background: #fff; border-top-left-radius: 2px; }
-
-        /* ナビゲーションバー */
-        .nav { display: flex; justify-content: space-around; background: #fff; border-top: 1px solid #eee; padding: 10px 0; color: #000; position: fixed; bottom: 0; width: 100%; z-index: 100; }
+        .nav { display: flex; justify-content: space-around; background: #fff; border-top: 1px solid #eee; padding: 10px 0; color: #000; position: fixed; bottom: 0; width: 100%; }
     </style>
 </head>
 <body>
@@ -36,18 +34,20 @@
     <div id="start-screen" class="screen active">
         <h1>MizukiConnect</h1>
         <button class="btn" style="background:var(--line-green); color:#fff;" onclick="switchScreen('reg-screen')">日本語でスタート</button>
-        <button class="btn" style="background:#fff; color:#000;" onclick="switchScreen('reg-screen')">English / Login</button>
     </div>
 
     <div id="reg-screen" class="screen" style="align-items:center; justify-content:center;">
-        <h2>Login / Sign Up</h2>
+        <h2 id="login-status">Login / Sign Up</h2>
+        
         <div id="g_id_onload"
              data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse">
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
         </div>
         <div class="g_id_signin" data-type="standard"></div>
 
-        <div id="mizu-fields" style="display:none; width:100%; text-align:center;">
+        <div id="mizu-fields" style="display:none; width:100%; text-align:center; flex-direction:column; align-items:center;">
+            <p>あと少し！IDを決めてね</p>
             <input type="text" id="mizu-id" placeholder="ID (英数字6-20)" oninput="vId()">
             <input type="text" id="mizu-name" maxlength="17" placeholder="表示名 (最大17文字)">
             <button id="reg-btn" class="btn" style="background:var(--line-green); color:#fff;" onclick="completeRegistration()" disabled>登録完了</button>
@@ -59,33 +59,22 @@
         <div class="search-bar">ID検索・キーワード検索</div>
         <div class="user-item" onclick="switchScreen('chat-screen')">
             <div class="user-icon"></div>
-            <div><b>公式ガイド</b><br><small style="color:gray;">MizukiConnectへようこそ！</small></div>
+            <div><b>公式ガイド</b><br><small style="color:gray;">ログイン成功！おめでとう！</small></div>
         </div>
-        <div class="nav">
-            <span onclick="switchScreen('search-screen')">🏠</span>
-            <span onclick="switchScreen('chat-screen')">💬</span>
-            <span onclick="switchScreen('profile-screen')">👤</span>
-        </div>
+        <div class="nav"><span onclick="switchScreen('search-screen')">🏠</span><span onclick="switchScreen('chat-screen')">💬</span></div>
     </div>
 
     <div id="chat-screen" class="screen">
-        <div class="header" style="background:#fff; color:#000;">
-            <span onclick="switchScreen('search-screen')">＜</span> <span>チャット</span> <span>📞</span>
-        </div>
+        <div class="header" style="background:#fff; color:#000;"><span onclick="switchScreen('search-screen')">＜</span> チャット</div>
         <div id="chat-area"></div>
-        <div style="padding:10px 10px 70px; background:#fff; display:flex; align-items:center;">
-            <input type="text" id="msg-input" style="background:#eee; color:#000; flex:1; margin:0 10px;" placeholder="Aa">
-            <button onclick="sendMsg()" style="color:var(--line-green); background:none; font-weight:bold;">送信</button>
-        </div>
     </div>
 
     <script>
-        // 瑞希さんが送ってくれた最新のURL（/devを確実に動く形に調整）
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbxthzZpeFiWDyyckBAftP44nN1c4jZJ9TG6B1XNyaNf/exec";
-
         let userEmail = "";
 
         function switchScreen(id) {
+            console.log("Switching to: " + id);
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
@@ -95,16 +84,21 @@
             document.getElementById('reg-btn').disabled = !(/^[a-zA-Z0-9]{6,20}$/.test(id));
         }
 
+        // Googleログインが成功したときに呼ばれる関数
         function handleCredentialResponse(response) {
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
-            userEmail = payload.email;
-            
+            console.log("Google Login Success");
+            // ログイン情報を解析
+            const responsePayload = JSON.parse(atob(response.credential.split('.')[1]));
+            userEmail = responsePayload.email;
+
+            // すでに登録済みなら検索画面へ、未登録なら入力欄を出す
             if (localStorage.getItem('mizu_user_' + userEmail)) {
                 switchScreen('search-screen');
             } else {
-                document.getElementById('mizu-fields').style.display = 'block';
                 document.querySelector('.g_id_signin').style.display = 'none';
-                document.getElementById('mizu-name').value = payload.name.substring(0, 17);
+                document.getElementById('login-status').innerText = "ようこそ！ " + responsePayload.name;
+                document.getElementById('mizu-fields').style.display = 'flex';
+                document.getElementById('mizu-name').value = responsePayload.name.substring(0, 17);
             }
         }
 
@@ -112,8 +106,9 @@
             const id = document.getElementById('mizu-id').value;
             const name = document.getElementById('mizu-name').value;
 
-            // スプレッドシートに送信
-            fetch(`${SHEET_URL}?email=${encodeURIComponent(userEmail)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}`, { mode: 'no-cors' });
+            // スプレッドシートへ送信
+            fetch(`${SHEET_URL}?email=${encodeURIComponent(userEmail)}&id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}`, { mode: 'no-cors' })
+            .then(() => console.log("Sent to Spreadsheet"));
 
             localStorage.setItem('mizu_user_' + userEmail, JSON.stringify({id, name}));
             switchScreen('search-screen');
@@ -121,11 +116,12 @@
 
         function sendMsg() {
             const input = document.getElementById('msg-input');
-            if (!input.value) return;
-            const area = document.getElementById('chat-area');
-            area.innerHTML += `<div class="bubble mine">${input.value}</div>`;
-            input.value = '';
-            area.scrollTop = area.scrollHeight;
+            if (input && input.value) {
+                const area = document.getElementById('chat-area');
+                area.innerHTML += `<div class="bubble mine">${input.value}</div>`;
+                input.value = '';
+                area.scrollTop = area.scrollHeight;
+            }
         }
     </script>
 </body>
