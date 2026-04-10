@@ -5,23 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>メイン - Mizuki Message</title>
     <link rel="stylesheet" href="2.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <header>
         <div class="header-left">
-            <img id="my-icon-display" src="" alt="icon" onclick="showProfile()" style="width: 35px; height: 35px; border-radius: 50%; cursor: pointer;">
+            <img id="my-icon-display" src="https://via.placeholder.com/35" alt="icon" onclick="showProfile()" style="width: 35px; height: 35px; border-radius: 50%; cursor: pointer;">
             <span id="welcome-message">...</span>
         </div>
         <button onclick="showSearch()">ID検索</button>
     </header>
 
     <div id="profile-section" class="container">
-        <h2>プロフィール編集</h2>
+        <h2>プロフィール連携</h2>
         <div class="profile-edit">
-            <img id="profile-preview" src="" style="width:100px; height:100px; border-radius:50%;">
-            <input type="text" id="profile-img-url" placeholder="画像URLを入力">
+            <p>Googleと連携してアイコンをゲット！</p>
+            <div id="g_id_onload"
+                 data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin" data-type="standard"></div>
+
+            <hr style="width:100%; margin: 20px 0;">
+            
+            <img id="profile-preview" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%;">
             <textarea id="profile-bio" placeholder="自己紹介を書いてね"></textarea>
-            <button onclick="saveProfile()">保存する</button>
+            <button onclick="saveProfile()">プロフィールを保存</button>
         </div>
     </div>
 
