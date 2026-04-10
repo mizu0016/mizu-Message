@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログイン</title>
+    <title>ログイン  Mizuki Message</title>
     <link rel="stylesheet" href="1.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="login-container">
-        <h1>チャットアプリ</h1>
-        <p>Googleアカウントでログインしてください</p>
-        
+        <h1>Mizuki Message</h1>
+        <div class="input-group">
+            <input type="text" id="user-id-input" placeholder="ユーザーIDを決めてください">
+            <input type="text" id="user-name-input" placeholder="名前を決めてください">
+        </div>
+        <p>最後にGoogleアカウントで認証してください</p>
         <div id="g_id_onload"
              data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
@@ -19,7 +22,6 @@
         </div>
         <div class="g_id_signin" data-type="standard" data-theme="outline"></div>
     </div>
-
     <script src="1.js"></script>
 </body>
 </html>
