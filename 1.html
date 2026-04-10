@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログイン  Mizuki Message</title>
+    <title>登録 - Mizuki Message</title>
     <link rel="stylesheet" href="1.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="login-container">
@@ -14,13 +13,7 @@
             <input type="text" id="user-id-input" placeholder="ユーザーIDを決めてください">
             <input type="text" id="user-name-input" placeholder="名前を決めてください">
         </div>
-        <p>最後にGoogleアカウントで認証してください</p>
-        <div id="g_id_onload"
-             data-client_id="391723430266-hiijbc67trrqmumu6160fj61g2nvauba.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse"
-             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin" data-type="standard" data-theme="outline"></div>
+        <button onclick="saveAndNext()" style="padding: 10px; background: #00B900; color: white; border: none; border-radius: 4px; cursor: pointer;">次へ進む</button>
     </div>
     <script src="1.js"></script>
 </body>
