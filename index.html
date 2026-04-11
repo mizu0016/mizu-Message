@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mizu — accountservice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+/* ============================================================
+   style.css — mizu accountservice
+   Theme: Deep black / water-like accent
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #080808;
+  --bg-card:    #0f0f0f;
+  --bg-input:   #161616;
+  --border:     #252525;
+  --accent:     #4fc3f7;       /* water blue */
+  --accent-dim: #1a4a5e;
+  --text:       #e8e8e8;
+  --text-dim:   #666;
+  --text-muted: #404040;
+  --ok:         #4caf82;
+  --error:      #ef5350;
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'Noto Sans JP', sans-serif;
+  --radius:     12px;
+  --radius-sm:  8px;
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 80px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Noise grain overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.site-header {
+  width: 100%;
+  max-width: 480px;
+  padding: 40px 24px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  letter-spacing: -0.04em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.tagline {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   PROFILE SECTION（プロフィール表示用・サンプル）
+   ============================================================ */
+.profile-section {
+  width: 100%;
+  max-width: 480px;
+  padding: 28px 24px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.profile-avatar-wrap {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.profile-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.profile-info { flex: 1; min-width: 0; }
+
+.profile-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-name [data-copy] {
+  cursor: pointer;
+  opacity: 0;
+  font-size: 0.75rem;
+  color: var(--accent);
+  transition: opacity var(--transition);
+  user-select: none;
+}
+
+.profile-name:hover [data-copy] { opacity: 1; }
+
+.profile-id {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+
+#follow-count {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  margin: -6px -10px;
+  transition: background var(--transition);
+}
+
+#follow-count:hover { background: rgba(79,195,247,.08); }
+
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
+.main-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 28px 24px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none;
+}
+
+.form-input::placeholder { color: var(--text-muted); }
+
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,195,247,.12);
+}
+
+/* 名前ステータス */
+#name-status {
+  font-size: 0.76rem;
+  margin-top: 6px;
+  min-height: 1.2em;
+  transition: color var(--transition);
+}
+
+#name-status[data-type="loading"] { color: var(--text-dim); }
+#name-status[data-type="ok"]      { color: var(--ok); }
+#name-status[data-type="error"]   { color: var(--error); }
+
+/* サジェスト */
+#name-suggestions {
+  margin-top: 10px;
+}
+
+.suggest-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  letter-spacing: 0.06em;
+}
+
+.suggest-chip {
+  display: inline-block;
+  background: var(--bg-input);
+  border: 1px solid var(--accent-dim);
+  color: var(--accent);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  margin: 0 6px 6px 0;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.suggest-chip:hover {
+  background: rgba(79,195,247,.08);
+  transform: translateY(-1px);
+}
+
+.suggest-chip:active { transform: translateY(0); }
+
+/* ── 画像アップロード ── */
+.image-upload-area {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+
+.image-upload-area:hover { border-color: var(--accent); }
+
+.image-upload-area input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+#image-placeholder {
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 0.76rem;
+}
+
+.upload-icon { font-size: 1.6rem; opacity: 0.4; }
+
+#image-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  display: none;
+}
+
+/* ── Submit ── */
+.btn-submit {
+  width: 100%;
+  background: var(--accent);
+  color: #040f14;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-submit:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 0 20px rgba(79,195,247,.35);
+  transform: translateY(-1px);
+}
+
+.btn-submit:active:not(:disabled) { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#form-status {
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 10px;
+  min-height: 1.2em;
+}
+
+/* ============================================================
+   MODAL — フォロー一覧
+   ============================================================ */
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+#modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+#follow-modal {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 0 0 env(safe-area-inset-bottom, 20px);
+  z-index: 101;
+  transition: transform 0.32s cubic-bezier(.4,0,.2,1);
+  max-height: 70dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+#follow-modal.open {
+  transform: translateX(-50%) translateY(0);
+}
+
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 14px auto 0;
+  flex-shrink: 0;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+#modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--transition);
+}
+
+#modal-close:hover { color: var(--text); }
+
+#follow-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 12px 20px 20px;
+}
+
+.follow-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.follow-item:last-child { border-bottom: none; }
+
+.follow-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.follow-name { font-size: 0.88rem; }
+
+.modal-loading, .modal-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  padding: 30px 0;
+}
+
+/* ============================================================
+   TOAST — Gemini流
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  width: calc(100% - 48px);
+  max-width: 400px;
+}
+
+.toast {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a1a1a;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 12px 20px;
+  font-size: 0.82rem;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 0.26s, transform 0.26s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none;
+  width: 100%;
+  overflow: hidden;
+}
+
+.toast--in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.toast--out {
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.toast--success .toast-icon { color: var(--ok); }
+.toast--error   .toast-icon { color: var(--error); }
+
+.toast-icon { font-size: 0.9rem; flex-shrink: 0; }
+.toast-msg  { flex: 1; }
+
+/* 波紋 */
+.toast-ripple {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(79,195,247,.1) 0%, transparent 70%);
+  animation: ripple-fade 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes ripple-fade {
+  from { opacity: 1; transform: scale(0.8); }
+  to   { opacity: 0; transform: scale(1.4); }
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="site-header">
+  <div class="logo">
+    mizu<span class="logo-dot"></span>
+  </div>
+  <p class="tagline">account service</p>
+</header>
+
+<!-- ── PROFILE SAMPLE（実装後はJSで動的生成）── -->
+<section class="profile-section">
+  <div class="profile-card">
+    <div class="profile-avatar-wrap">
+      <img class="profile-avatar"
+           src="https://placehold.co/72x72/0f0f0f/4fc3f7?text=?"
+           alt="avatar" id="profile-avatar-img">
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">
+        <span id="profile-display-name">ユーザー名</span>
+        <span data-copy="ユーザー名" title="名前をコピー">コピー</span>
+      </div>
+      <div class="profile-id" id="profile-display-id">@user_id</div>
+      <div class="profile-stats">
+        <div class="stat-item"
+             id="follow-count"
+             data-user-id="sample_user"
+             role="button" tabindex="0"
+             aria-label="フォロー一覧を開く">
+          <span class="stat-num" id="stat-follows">0</span>
+          <span class="stat-label">フォロー</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" id="stat-followers">0</span>
+          <span class="stat-label">フォロワー</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ACCOUNT FORM ── -->
+<main class="main-card">
+  <div class="card">
+    <p class="card-title">アカウントを作成</p>
+
+    <form id="account-form" novalidate>
+
+      <!-- ID -->
+      <div class="form-group">
+        <label class="form-label" for="input-id">ユーザーID</label>
+        <input type="text" id="input-id" class="form-input"
+               placeholder="例: mizu_user01"
+               autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+
+      <!-- パスワード -->
+      <div class="form-group">
+        <label class="form-label" for="input-password">パスワード</label>
+        <input type="password" id="input-password" class="form-input"
+               placeholder="8文字以上を推奨"
+               autocomplete="new-password">
+      </div>
+
+      <!-- 名前 -->
+      <div class="form-group">
+        <label class="form-label" for="input-name">表示名</label>
+        <input type="text" id="input-name" class="form-input"
+               placeholder="例: 水面_りん"
+               autocapitalize="none" spellcheck="false">
+        <div id="name-status" data-type=""></div>
+        <div id="name-suggestions"></div>
+      </div>
+
+      <!-- 画像 -->
+      <div class="form-group">
+        <label class="form-label">プロフィール画像</label>
+        <div class="image-upload-area">
+          <input type="file" id="input-image" accept="image/*">
+          <div id="image-placeholder">
+            <span class="upload-icon">🌊</span>
+            <span>タップして画像を選択（2MB以下）</span>
+          </div>
+          <img id="image-preview" src="" alt="preview">
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn-submit">
+        アカウントを作成する
+      </button>
+      <div id="form-status"></div>
+
+    </form>
+  </div>
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  &copy; 2025 mizu
+</footer>
+
+<!-- ── FOLLOW MODAL ── -->
+<div id="modal-overlay"></div>
+<div id="follow-modal" role="dialog" aria-modal="true" aria-label="フォロー一覧">
+  <div class="modal-handle"></div>
+  <div class="modal-header">
+    <span class="modal-title">フォロー中</span>
+    <button id="modal-close" aria-label="閉じる">✕</button>
+  </div>
+  <div id="follow-list"></div>
+</div>
+
+<!-- ── JS ── -->
+<script src="js.js"></script>
+</body>
+</html>
