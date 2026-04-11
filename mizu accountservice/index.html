@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mizu accountservice</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="signup-page" class="container">
+    <h1>mizu accountservice</h1>
+    <div class="form-group">
+      <input type="text" id="user-id" placeholder="ユーザーID">
+      <input type="password" id="user-pw" placeholder="パスワード">
+      
+      <div class="name-check-area">
+        <input type="text" id="user-name" placeholder="名前" oninput="checkNameName()">
+        <p id="name-status" class="status-msg"></p>
+        <div id="wait-msg" class="wait-msg" style="display:none;">最適な名前を逆算中... もう少しお待ちください</div>
+        <div id="suggestions" class="suggestions-list"></div>
+      </div>
+
+      <div class="upload-area">
+        <label for="user-icon">プロフィール画像を選択</label>
+        <input type="file" id="user-icon" accept="image/*">
+      </div>
+      
+      <button onclick="createAccount()" class="main-btn">アカウントを作成する</button>
+    </div>
+  </div>
+
+  <div id="home-page" class="container" style="display:none;">
+    <div class="share-section" onclick="copyMyName()">
+      <span id="display-name">ミズ</span>
+      <span class="copy-icon">📋</span>
+    </div>
+
+    <div class="follow-section">
+      <input type="text" id="follow-target" placeholder="フォローしたい人の名前を入力">
+      <button onclick="followUser()">フォロー</button>
+    </div>
+
+    <div class="profile-card">
+      <div id="profile-img-container"></div>
+      <p class="follow-count" onclick="showFollowList()">フォロー <span id="count-num">0</span></p>
+    </div>
+  </div>
+
+  <div id="copy-toast" class="toast">コピー完了！友達に教えてあげよう 🚀</div>
+
+  <script src="js.js"></script>
+</body>
+</html>
